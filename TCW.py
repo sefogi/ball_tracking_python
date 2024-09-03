@@ -6,6 +6,8 @@ import cv2
 import imutils
 import time
 
+face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+
 # Argument parsing
 ap = argparse.ArgumentParser()
 ap.add_argument("-v", "--video", help="video file path")
@@ -14,10 +16,12 @@ args = vars(ap.parse_args())
 
 # Color boundaries in HSV
 colors = {
-    "green": ((29, 86, 6), (64, 255, 255)),
-    "blue": ((90, 50, 50), (130, 255, 255)),
-    "red": ((0, 50, 50), (10, 255, 255)),
-    "yellow": ((20, 100, 100), (30, 255, 255)),
+     "green": ((29, 86, 6), (64, 255, 255)),
+     "blue": ((90, 50, 50), (130, 255, 255)),
+     "red": ((0, 50, 50), (10, 255, 255)),
+     "yellow": ((20, 100, 100), (30, 255, 255)),
+     "black":  ((0, 0, 0), (179, 255, 30)),
+
 }
 
 # Initialize tracked points
@@ -35,13 +39,22 @@ while True:
         break
     else:
         # Resize frame
-        frame = imutils.resize(frame, width=600)
+        frame = imutils.resize(frame, width=1000)
         
         # Apply Gaussian blur
         blurred = cv2.GaussianBlur(frame, (11, 11), 0)
         
+        # Convertir a escala de grises
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        
+        # Detectar rostros
+        faces = face_cascade.detectMultiScale(gray, 1.1, 4)
+        
         # Convert to HSV
         hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
+        
+        for (x, y, w, h) in faces:
+            cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
 
         for color, (lower, upper) in colors.items():
             # Create mask
